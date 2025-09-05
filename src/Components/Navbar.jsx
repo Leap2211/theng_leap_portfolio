@@ -1,85 +1,95 @@
-import { Menu } from "lucide-react";
-import { useState } from "react";
-import { ThemeToggle } from "./ThemeToggle";
 import { cn } from "@/lib/utils";
+import { Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ThemeToggle } from "./ThemeToggle";
+
+const navItems = [
+  { name: "Home", href: "#hero" },
+  { name: "About", href: "#about" },
+  { name: "Skills", href: "#skills" },
+  { name: "Projects", href: "#projects" },
+  { name: "Contact", href: "#contact" },
+];
 
 export const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="bg-card border-b border-border sticky top-0 z-40">
-      <div className="container mx-auto max-w-5xl px-4 sm:px-6 py-4 flex items-center justify-between">
-        {/* Logo/Brand */}
-        <a href="#hero" className="text-xl font-bold text-primary">
-          ThengLeap.co
+    <nav
+      className={cn(
+        "fixed w-full z-40 transition-all duration-300",
+        isScrolled ? "py-3 bg-background/80 backdrop-blur-md shadow-xs" : "py-5"
+      )}
+    >
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6 flex items-center justify-between">
+        <a
+          className="text-xl font-bold text-primary flex items-center"
+          href="#hero"
+        >
+          <span className="relative z-10">
+            <span className="text-glow text-foreground">Theng Leap</span> Portfolio
+          </span>
         </a>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="sm:hidden p-2 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors"
-          onClick={toggleMenu}
-          aria-label="Toggle navigation menu"
-        >
-          <Menu className="h-6 w-6 text-foreground" />
-        </button>
-
-        {/* Desktop Menu */}
-        <div className="hidden sm:flex items-center gap-6">
-          <a href="#about" className="text-foreground hover:text-primary transition-colors">
-            About
-          </a>
-          <a href="#skills" className="text-foreground hover:text-primary transition-colors">
-            Skills
-          </a>
-          <a href="#projects" className="text-foreground hover:text-primary transition-colors">
-            Projects
-          </a>
-          <a href="#contact" className="text-foreground hover:text-primary transition-colors">
-            Contact
-          </a>
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center space-x-8">
+          {navItems.map((item, key) => (
+            <a
+              key={key}
+              href={item.href}
+              className="text-foreground/80 hover:text-primary transition-colors duration-300"
+              aria-current={item.href === window.location.hash ? "page" : undefined}
+            >
+              {item.name}
+            </a>
+          ))}
           <ThemeToggle />
         </div>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="sm:hidden absolute top-full left-0 w-full bg-card border-b border-border shadow-lg">
-            <div className="flex flex-col items-center gap-4 py-4">
+        {/* Mobile Nav Button */}
+        <button
+          onClick={() => setIsMenuOpen((prev) => !prev)}
+          className="md:hidden p-2 text-foreground z-50"
+          aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
+        >
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+
+        {/* Mobile Nav Menu */}
+        <div
+          className={cn(
+            "fixed inset-0 bg-background/95 backdrop-blur-md z-40 flex flex-col items-center justify-center",
+            "transition-all duration-300 md:hidden",
+            isMenuOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          )}
+        >
+          <div className="flex flex-col items-center space-y-8 text-xl">
+            {navItems.map((item, key) => (
               <a
-                href="#about"
-                className="text-foreground hover:text-primary transition-colors"
-                onClick={toggleMenu}
+                key={key}
+                href={item.href}
+                className="text-foreground/80 hover:text-primary transition-colors duration-300"
+                onClick={() => setIsMenuOpen(false)}
+                aria-current={item.href === window.location.hash ? "page" : undefined}
               >
-                About
+                {item.name}
               </a>
-              <a
-                href="#skills"
-                className="text-foreground hover:text-primary transition-colors"
-                onClick={toggleMenu}
-              >
-                Skills
-              </a>
-              <a
-                href="#projects"
-                className="text-foreground hover:text-primary transition-colors"
-                onClick={toggleMenu}
-              >
-                Projects
-              </a>
-              <a
-                href="#contact"
-                className="text-foreground hover:text-primary transition-colors"
-                onClick={toggleMenu}
-              >
-                Contact
-              </a>
-              <ThemeToggle />
-            </div>
+            ))}
+            <ThemeToggle />
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );
